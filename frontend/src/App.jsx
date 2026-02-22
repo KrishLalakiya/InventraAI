@@ -4,6 +4,7 @@ import Dashboard from "./pages/Dashboard";
 import AddProduct from "./pages/AddProduct";
 import AddSale from "./pages/AddSale";
 import ProductTable from "./pages/ProductTable";
+import Simulation from "./pages/Simulation";
 
 export default function App() {
   return (
@@ -43,6 +44,8 @@ export default function App() {
             to="/products"
           >Products</NavLink>
 
+          <NavLink to="/simulation">Simulation</NavLink>
+
         </nav>
 
         {/* ================= PAGE CONTENT ================= */}
@@ -52,6 +55,7 @@ export default function App() {
             <Route path="/add-product" element={<AddProduct />} />
             <Route path="/add-sale" element={<AddSale />} />
             <Route path="/products" element={<ProductTable />} />
+            <Route path="/simulation" element={<Simulation />} />
           </Routes>
         </div>
 

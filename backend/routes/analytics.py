@@ -166,3 +166,26 @@ def get_profit_forecast(db: Session = Depends(get_db)):
     result = calculate_profit_forecast(products, sales_map)
 
     return result
+
+@router.post("/simulate")
+def simulate_profit(data: dict, db: Session = Depends(get_db)):
+    product_id = data.get("product_id")
+    new_price = data.get("new_price")
+    new_stock = data.get("new_stock")
+
+    product = db.query(models.Product).filter(models.Product.id == product_id).first()
+
+    if not product:
+        return {"error": "Product not found"}
+
+    # Basic simulation logic
+    estimated_sales = min(new_stock, new_stock * 0.7)
+
+    revenue = estimated_sales * new_price
+    cost = estimated_sales * product.cost_price
+    profit = revenue - cost
+
+    return {
+        "simulated_revenue": revenue,
+        "simulated_profit": profit
+    }
