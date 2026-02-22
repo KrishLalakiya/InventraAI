@@ -3,10 +3,14 @@ import API from "../api/api";
 
 export default function AddSale() {
   const [products, setProducts] = useState([]);
+  const [csvName, setCsvName] = useState("");
+  // helper to format today's date as yyyy-mm-dd for the date input value
+  const today = new Date().toISOString().split("T")[0];
+
   const [form, setForm] = useState({
     product_id: "",
     quantity_sold: "",
-    sale_date: ""
+    sale_date: today
   });
 
   useEffect(() => {
@@ -44,11 +48,34 @@ export default function AddSale() {
       setForm({
         product_id: "",
         quantity_sold: "",
-        sale_date: ""
+        sale_date: today
       });
 
     } catch (error) {
       console.error("Error adding sale:", error);
+    }
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setCsvName(file.name);
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await API.post("/sales/upload_csv", formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+
+      alert(`Import complete: ${res.data.sales_imported} sales imported, ${res.data.created_products} products created`);
+      // refresh products list
+      fetchProducts();
+    } catch (err) {
+      console.error("CSV upload failed", err);
+      alert("CSV upload failed");
     }
   };
 
@@ -103,6 +130,16 @@ export default function AddSale() {
         </button>
 
       </form>
+
+      <div className="mt-6 max-w-md">
+        <h2 className="text-lg font-semibold mb-2">Upload Sales CSV</h2>
+        <div className="flex items-center gap-3">
+          <label htmlFor="csv-upload" className="inline-block bg-blue-600 text-white px-4 py-2 rounded cursor-pointer hover:bg-blue-700">Choose CSV</label>
+          <input id="csv-upload" type="file" accept=".csv" onChange={handleFileUpload} className="hidden" />
+          <span id="csv-filename" className="text-sm text-gray-600">{csvName || 'Drop a CSV or click Choose CSV'}</span>
+        </div>
+        <p className="text-sm text-gray-500 mt-2">CSV columns: product_id or product_name, quantity_sold, sale_date (YYYY-MM-DD). If product_name doesn't exist, product will be created.</p>
+      </div>
     </div>
   );
 }

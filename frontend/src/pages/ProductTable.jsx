@@ -45,26 +45,36 @@ export default function ProductTable() {
                   {product.name}
                 </td>
                 <td className="px-6 py-4">
-                  ₹ {product.price}
+                  {typeof product.selling_price !== 'undefined' && product.selling_price !== null
+                    ? `₹ ${product.selling_price}`
+                    : '—'}
                 </td>
                 <td className="px-6 py-4">
                   ₹ {product.cost_price}
                 </td>
                 <td className="px-6 py-4">
-                  {product.stock_quantity}
+                  {typeof product.current_stock !== 'undefined' && product.current_stock !== null
+                    ? product.current_stock
+                    : '—'}
                 </td>
                 <td className="px-6 py-4">
-                  <span
-                    className={
-                      product.risk_level === "High"
-                        ? "bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm"
-                        : product.risk_level === "Medium"
-                          ? "bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm"
-                          : "bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm"
-                    }
-                  >
-                    {product.risk_level}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span
+                      className={
+                        product.risk_level === "High"
+                          ? "bg-red-100 text-red-600 px-3 py-1 rounded-full text-sm"
+                          : product.risk_level === "Medium"
+                            ? "bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm"
+                            : "bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm"
+                      }
+                    >
+                      {product.risk_level}
+                    </span>
+
+                    {typeof product.risk_score !== 'undefined' && (
+                      <span className="text-sm text-gray-500">({product.risk_score})</span>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}

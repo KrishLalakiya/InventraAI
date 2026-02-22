@@ -6,7 +6,8 @@ export default function AddProduct() {
     name: "",
     selling_price: "",
     cost_price: "",
-    current_stock: ""
+    current_stock: "",
+    expiry_date: ""
   });
 
   const handleChange = (e) => {
@@ -24,7 +25,8 @@ export default function AddProduct() {
         name: form.name,
         selling_price: parseFloat(form.selling_price),
         cost_price: parseFloat(form.cost_price),
-        current_stock: parseInt(form.current_stock)
+        current_stock: parseInt(form.current_stock),
+        expiry_date: form.expiry_date || undefined
       });
 
       alert("Product added successfully ✅");
@@ -34,7 +36,8 @@ export default function AddProduct() {
         name: "",
         selling_price: "",
         cost_price: "",
-        current_stock: ""
+        current_stock: "",
+        expiry_date: ""
       });
 
     } catch (error) {
@@ -91,6 +94,15 @@ export default function AddProduct() {
           onChange={handleChange}
           className="w-full p-3 border rounded-lg"
           required
+        />
+
+        <input
+          type="date"
+          name="expiry_date"
+          placeholder="Expiry Date"
+          value={form.expiry_date}
+          onChange={handleChange}
+          className="w-full p-3 border rounded-lg"
         />
 
         <button

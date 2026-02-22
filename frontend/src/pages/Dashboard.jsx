@@ -24,53 +24,66 @@ export default function Dashboard() {
   // ================= BAR CHART DATA =================
   const chartData = profitData
     ? [
-      {
-        name: "Next 7 Days",
-        Revenue: profitData.total_predicted_revenue,
-        Profit: profitData.total_predicted_profit,
-      },
-    ]
+        {
+          name: "Next 7 Days",
+          Revenue: profitData.total_predicted_revenue,
+          Profit: profitData.total_predicted_profit,
+        },
+      ]
     : [];
 
   // ================= LINE CHART DATA =================
-  const trendData = profitData
-    ? [
-      { day: "Mon", revenue: profitData.total_predicted_revenue * 0.12 },
-      { day: "Tue", revenue: profitData.total_predicted_revenue * 0.15 },
-      { day: "Wed", revenue: profitData.total_predicted_revenue * 0.18 },
-      { day: "Thu", revenue: profitData.total_predicted_revenue * 0.14 },
-      { day: "Fri", revenue: profitData.total_predicted_revenue * 0.16 },
-      { day: "Sat", revenue: profitData.total_predicted_revenue * 0.13 },
-      { day: "Sun", revenue: profitData.total_predicted_revenue * 0.12 }
-    ]
-    : [];
+  const trendData = (profitData && profitData.trend) ? profitData.trend : (
+    profitData
+      ? [
+          { day: "Mon", revenue: profitData.total_predicted_revenue * 0.12 },
+          { day: "Tue", revenue: profitData.total_predicted_revenue * 0.15 },
+          { day: "Wed", revenue: profitData.total_predicted_revenue * 0.18 },
+          { day: "Thu", revenue: profitData.total_predicted_revenue * 0.14 },
+          { day: "Fri", revenue: profitData.total_predicted_revenue * 0.16 },
+          { day: "Sat", revenue: profitData.total_predicted_revenue * 0.13 },
+          { day: "Sun", revenue: profitData.total_predicted_revenue * 0.12 }
+        ]
+      : []
+  );
 
   // ================= PIE CHART DATA =================
+  const deadCount = cashflow && Array.isArray(cashflow.dead_stock_products)
+    ? cashflow.dead_stock_products.length
+    : 0;
+
   const pieData = cashflow
     ? [
-      {
-        name: "Active Stock",
-        value: 100 - cashflow.dead_stock_products.length * 10
-      },
-      {
-        name: "Dead Stock",
-        value: cashflow.dead_stock_products.length * 10
-      }
-    ]
+        { name: "Active Stock", value: Math.max(0, 100 - deadCount * 10) },
+        { name: "Dead Stock", value: deadCount * 10 }
+      ]
     : [];
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const profitRes = await API.get("/analytics/profit-forecast");
+        const metricsRes = await API.get("/analytics/metrics");
+        const trendRes = await API.get("/analytics/revenue_trend");
         const rebalanceRes = await API.get("/analytics/rebalance");
-        const insightsRes = await API.get("/analytics/insights");
-        const cashflowRes = await API.get("/analytics/cashflow");
+        const insightsRes = await API.get("/analytics/insights_nl");
+        const cashflowRes = await API.get("/analytics/cashflow_guardian");
 
-        setProfitData(profitRes.data);
+        setProfitData({
+          total_predicted_revenue: metricsRes.data.total_revenue,
+          total_predicted_profit: metricsRes.data.total_profit
+        });
+
         setRebalance(rebalanceRes.data.rebalance_recommendations || []);
-        setInsights(insightsRes.data.ai_insights || []);
-        setCashflow(cashflowRes.data);
+        setInsights(insightsRes.data.insights || []);
+        setCashflow(cashflowRes.data || null);
+
+        // Replace trend data with real trend when available
+        if (trendRes.data && trendRes.data.trend) {
+          // transform to expected format for chart
+          // we map date -> revenue
+          const t = trendRes.data.trend.map((d) => ({ day: d.date, revenue: d.revenue }));
+          setProfitData((prev) => ({ ...prev, trend: t }));
+        }
 
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
@@ -105,6 +118,11 @@ export default function Dashboard() {
             <p className="text-2xl font-bold text-blue-600">
               ₹ {profitData.total_predicted_profit}
             </p>
+          </div>
+          
+          <div className="bg-white p-6 rounded-xl shadow">
+            <h2 className="text-gray-500">Total Inventory</h2>
+            <p className="text-2xl font-bold text-gray-800">{profitData.total_stock ?? '—'}</p>
           </div>
         </div>
       )}
