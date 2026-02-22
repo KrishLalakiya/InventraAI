@@ -14,3 +14,7 @@ pandas
 
 # Optional for GPT integration
 openai
+
+# Vision/OCR
+pytesseract
+Pillow
